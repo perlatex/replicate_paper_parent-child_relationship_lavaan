@@ -1,0 +1,239 @@
+---
+title: "Parent–Child Relationship and Learning Engagement"
+author: "wmj"
+date: "`r Sys.Date()`"
+output: 
+  officedown::rdocx_document:
+    number_sections: yes
+    df_print: kable
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    echo     = FALSE,
+    warning  = FALSE, 
+    message  = FALSE,
+    fig.asp  = 0.618,
+    dpi      = 300
+)
+options(digits = 3)
+```
+
+
+
+```{r}
+library(tidyverse)
+library(lavaan)
+
+rawdata <- readxl::read_excel("./rawdata/Table 1.XLS")
+rawdata %>% sjPlot::view_df()
+```
+
+# Sampling and Data Collection
+
+```{r}
+rawdata %>% 
+  count(gender)
+```
+
+```{r}
+rawdata %>% 
+  count(Grade)
+```
+
+```{r}
+rawdata %>% 
+  count(place)
+```
+# Confirmatory Factor Analysis
+
+Confirmatory factor analysis (CFA) was performed for each variable 
+```{r}
+m_PCR <- '
+  PCR   =~ PCR1 + PCR2 + PCR3 + PCR4 + PCR5 + PCR6
+
+'
+
+m_LE <- '
+  LE    =~ LE1 + LE2 + LE3 + LE4
+
+'
+
+
+m_ASE <- '
+  ASE   =~ ASE1 + ASE2 + ASE3 + ASE4 + ASE5 
+
+'
+
+m_LM <- '
+  LM    =~ LM1 + LM2 + LM3 + LM4
+
+'
+
+lst(m_PCR, m_LE, m_ASE, m_LM) %>% 
+  purrr::map( ~cfa(.x, data = rawdata) ) %>% 
+  lavaanExtra::nice_fit(nice_table = TRUE)
+```
+
+## Table 2
+```{r}
+cfamodel <- '
+
+  PCR   =~ PCR1 + PCR2 + PCR3 + PCR4 + PCR5 + PCR6
+  LE    =~ LE1 + LE2 + LE3 + LE4
+  ASE   =~ ASE1 + ASE2 + ASE3 + ASE4 + ASE5 
+  LM    =~ LM1 + LM2 + LM3 + LM4
+
+  
+'
+
+fit_cfa <- cfa(cfamodel, 
+               data = rawdata,
+               estimator = "MLR", 
+               mimic = "Mplus")
+```
+
+
+
+```{r}
+Alpha <- semTools::reliability(fit_cfa)[1, ]
+CR    <- semTools::compRelSEM(fit_cfa)
+AVE   <- semTools::AVE(fit_cfa)
+
+tibble(
+  Details = names(Alpha),
+  Alpha   = Alpha,
+  CR      = CR,
+  AVE     = AVE
+)
+```
+
+
+
+
+```{r}
+fit_cfa %>%  
+  parameterEstimates(standardized = TRUE) %>% 
+  filter(op == "=~") %>%  
+  flextable::flextable() %>%
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::color(j = "std.all", color = "red") %>% 
+  flextable::autofit()
+```
+
+
+
+
+
+
+## Table 3 
+The discriminate validity test of latent variables.
+```{r}
+m <- lavInspect(fit_cfa, what = "cor.lv") 
+order <- c("PCR", "LM", "ASE", "LE")
+m <- m[order, order]
+m[upper.tri(m)] <- NA
+diag(m) <- semTools::AVE(fit_cfa) %>% sqrt()
+
+m %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>% 
+  rename(" " = rowname) %>% 
+  flextable::flextable() %>%
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::autofit() 
+```
+
+
+
+
+
+
+## Table 4
+```{r}
+library(lavaanExtra)
+fit_cfa %>% 
+  lavaanExtra::nice_fit(nice_table = TRUE)
+```
+
+
+
+
+## Table 5
+
+```{r}
+model <- '
+
+   PCR   =~ PCR1 + PCR2 + PCR3 + PCR4 + PCR5 + PCR6
+   LE    =~ LE1 + LE2 + LE3 + LE4
+   ASE   =~ ASE1 + ASE2 + ASE3 + ASE4 + ASE5 
+   LM    =~ LM1 + LM2 + LM3 + LM4
+
+   LM    ~  H2*PCR  
+   ASE   ~  H5*PCR + H6*LM
+   LE    ~  H1*PCR + H3*LM + H7*ASE
+
+   DistalIE     := H2*H6*H7
+   LMIE         := H2*H3
+   ASEIE        := H5*H7
+   TIE          := DistalIE + LMIE + ASEIE
+   DE           := H1
+   TE           := TIE + DE
+   
+   LMDIEdiff    := LMIE  - DistalIE
+   ASEDIEdiff   := ASEIE - DistalIE
+   LMASEdiff    := LMIE  - ASEIE
+   
+   P1           := DistalIE/TIE
+   P2           := LMIE/TIE
+   P3           := ASEIE/TIE
+   P4           := TIE/TE
+   P5           := DE/TE
+
+
+'
+
+
+fit_sem <- sem(model, 
+               data      = rawdata, 
+               se        = "bootstrap",
+               bootstrap = 5000,
+               mimic     = "Mplus"
+               )
+```
+
+
+
+
+
+
+
+```{r}
+fit_sem %>%  
+  parameterEstimates(standardized = TRUE) %>% 
+  filter(op %in% c("~")) %>%  
+  filter(str_detect(label, "^H")) %>% 
+  arrange(label) %>% 
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = "std.all", color = "red") %>% 
+  flextable::colformat_double(digits = 3)
+```
+我们得到的结论，和图中的系数一样，但和表5中不同
+
+
+
+
+## Table 6
+Direct, indirect, and total effects of the hypothesized model.
+
+```{r}
+fit_sem %>%  
+  parameterEstimates(standardized = TRUE) %>% 
+  filter(op %in% c(":=")) %>%  
+  flextable::flextable() %>% 
+  flextable::autofit() %>% 
+  flextable::color(j = "est", color = "red") %>% 
+  flextable::colformat_double(digits = 3)
+```
