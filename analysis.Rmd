@@ -46,6 +46,8 @@ rawdata %>%
 rawdata %>% 
   count(place)
 ```
+
+
 # Confirmatory Factor Analysis
 
 Confirmatory factor analysis (CFA) was performed for each variable 
@@ -89,9 +91,9 @@ cfamodel <- '
 '
 
 fit_cfa <- cfa(cfamodel, 
-               data = rawdata,
+               data      = rawdata,
                estimator = "MLR", 
-               mimic = "Mplus")
+               mimic     = "Mplus")
 ```
 
 
@@ -116,6 +118,7 @@ tibble(
 fit_cfa %>%  
   parameterEstimates(standardized = TRUE) %>% 
   filter(op == "=~") %>%  
+  mutate(" " = gtools::stars.pval(pvalue), .after = pvalue) %>%
   flextable::flextable() %>%
   flextable::colformat_double(digits = 3) %>% 
   flextable::color(j = "std.all", color = "red") %>% 
@@ -214,6 +217,7 @@ fit_sem %>%
   parameterEstimates(standardized = TRUE) %>% 
   filter(op %in% c("~")) %>%  
   filter(str_detect(label, "^H")) %>% 
+  mutate(" " = gtools::stars.pval(pvalue), .after = pvalue) %>%
   arrange(label) %>% 
   flextable::flextable() %>% 
   flextable::autofit() %>% 
