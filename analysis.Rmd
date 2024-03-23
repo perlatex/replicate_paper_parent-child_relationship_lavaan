@@ -97,33 +97,42 @@ fit_cfa <- cfa(cfamodel,
 ```
 
 
-
 ```{r}
-Alpha <- semTools::reliability(fit_cfa)[1, ]
-CR    <- semTools::compRelSEM(fit_cfa)
-AVE   <- semTools::AVE(fit_cfa)
+alpha <- fit_cfa %>% semTools::reliability()   # Cronbach alpha
+CR    <- fit_cfa %>% semTools::compRelSEM()    # CR
+AVE   <- fit_cfa %>% semTools::AVE()           # AVE 
 
-tibble(
-  Details = names(Alpha),
-  Alpha   = Alpha,
-  CR      = CR,
-  AVE     = AVE
-)
+dd <- tibble(
+  name = names(CR),
+  alpha = alpha[1,],
+  CR    = CR,
+  AVE   = AVE
+) 
 ```
 
 
 
 
+
 ```{r}
-fit_cfa %>%  
-  parameterEstimates(standardized = TRUE) %>% 
-  filter(op == "=~") %>%  
-  mutate(" " = gtools::stars.pval(pvalue), .after = pvalue) %>%
-  flextable::flextable() %>%
+tb <- fit_cfa %>% 
+  parameterestimates(standardized = TRUE) %>% 
+  filter(op == "=~") %>% 
+  mutate(pvalue = gtools::stars.pval(pvalue)) %>% 
+  select(-op, -std.lv, -std.nox, -ci.lower, -ci.upper) %>% 
+  left_join(dd, join_by(lhs == name))
+
+tb %>% 
+  flextable::flextable() %>% 
+  flextable::merge_v(j = c("lhs", "alpha", "CR", "AVE")) %>% 
+  flextable::valign(j = "lhs", valign = "top") %>% 
   flextable::colformat_double(digits = 3) %>% 
-  flextable::color(j = "std.all", color = "red") %>% 
   flextable::autofit()
 ```
+
+
+
+
 
 
 
