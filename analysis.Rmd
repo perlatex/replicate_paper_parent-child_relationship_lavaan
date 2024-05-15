@@ -48,6 +48,19 @@ rawdata %>%
 ```
 
 
+
+偷懒的办法
+
+```{r}
+library(gtsummary)
+
+rawdata %>% 
+  select(gender, Grade, place) %>% 
+  gtsummary::tbl_summary()
+```
+
+
+
 # Confirmatory Factor Analysis
 
 Confirmatory factor analysis (CFA) was performed for each variable 
@@ -103,7 +116,7 @@ CR    <- fit_cfa %>% semTools::compRelSEM()    # CR
 AVE   <- fit_cfa %>% semTools::AVE()           # AVE 
 
 dd <- tibble(
-  name = names(CR),
+  name  = names(CR),
   alpha = alpha[1,],
   CR    = CR,
   AVE   = AVE
@@ -115,14 +128,12 @@ dd <- tibble(
 
 
 ```{r}
-tb <- fit_cfa %>% 
+tb2 <- fit_cfa %>% 
   parameterestimates(standardized = TRUE) %>% 
   filter(op == "=~") %>% 
   mutate(pvalue = gtools::stars.pval(pvalue)) %>% 
-  select(-op, -std.lv, -std.nox, -ci.lower, -ci.upper) %>% 
-  left_join(dd, join_by(lhs == name))
-
-tb %>% 
+  select(lhs, rhs, est, se, z, pvalue, std.all) %>% 
+  left_join(dd, by = join_by(lhs == name)) %>% 
   flextable::flextable() %>% 
   flextable::merge_v(j = c("lhs", "alpha", "CR", "AVE")) %>% 
   flextable::valign(j = "lhs", valign = "top") %>% 
@@ -133,6 +144,11 @@ tb %>%
 
 
 
+
+```{r}
+tab2 %>% 
+  flextable::save_as_docx(path = "ppp.docx")
+```
 
 
 
