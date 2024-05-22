@@ -174,6 +174,17 @@ m %>%
 ```
 
 
+```{r}
+AVE <- fit %>% semTools::AVE()  
+
+fit_cfa %>% 
+  lavaan::inspect(what = "cor.lv") %>% 
+  corrr::as_cordf(diagonal = sqrt(AVE)) %>% 
+  corrr::shave() %>% 
+  flextable::flextable() %>% 
+  flextable::colformat_double(digits = 3) %>% 
+  flextable::autofit()
+```
 
 
 
@@ -261,6 +272,7 @@ Direct, indirect, and total effects of the hypothesized model.
 fit_sem %>%  
   parameterEstimates(standardized = TRUE) %>% 
   filter(op %in% c(":=")) %>%  
+  select(label, est, se, z, pvalue, ci.lower, ci.upper, std.all) %>% 
   flextable::flextable() %>% 
   flextable::autofit() %>% 
   flextable::color(j = "est", color = "red") %>% 
