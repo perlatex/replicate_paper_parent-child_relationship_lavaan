@@ -175,10 +175,10 @@ m %>%
 
 
 ```{r}
-AVE <- fit %>% semTools::AVE()  
+AVE <- fit_cfa %>% semTools::AVE()  
 
 fit_cfa %>% 
-  lavaan::inspect(what = "cor.lv") %>% 
+  lavaan::lavInspect(what = "cor.lv") %>% 
   corrr::as_cordf(diagonal = sqrt(AVE)) %>% 
   corrr::shave() %>% 
   flextable::flextable() %>% 
