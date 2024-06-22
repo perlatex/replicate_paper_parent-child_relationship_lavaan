@@ -165,7 +165,9 @@ tab2 %>%
 
 
 ## Table 3 
+
 The discriminate validity test of latent variables.
+
 ```{r}
 m <- lavInspect(fit_cfa, what = "cor.lv") 
 order <- c("PCR", "LM", "ASE", "LE")
@@ -239,7 +241,6 @@ model <- '
    P4           := TIE/TE
    P5           := DE/TE
 
-
 '
 
 
@@ -269,6 +270,7 @@ fit_sem %>%
   flextable::color(j = "std.all", color = "red") %>% 
   flextable::colformat_double(digits = 3)
 ```
+
 我们得到的结论，和图中的系数一样，但和表5中不同
 
 

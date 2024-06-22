@@ -34,7 +34,8 @@ fit %>%
   mutate(" " = gtools::stars.pval(pvalue), .after = pvalue) %>%
   arrange(label) %>% 
   flextable::flextable() %>% 
-  flextable::color(j = "std.all", color = "red") %>% 
+  flextable::color(j = "est", color = "red") %>% 
+  flextable::color(j = "std.all", color = "blue") %>% 
   flextable::colformat_double(digits = 3) %>% 
   flextable::autofit()  
 ########################################################################
