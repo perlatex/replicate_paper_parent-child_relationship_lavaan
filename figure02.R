@@ -45,6 +45,42 @@ fit %>%
 
 
 ########################################################################
+p <- fit %>% 
+  semPaths(
+    what           = "path", 
+    whatLabels     = "std",       
+    style          = "ram",    # lisrel / ram 
+    edge.label.cex = 0.8,        
+    edge.color     = "blue",     
+    exoVar         = FALSE,
+    residScale     = 8,   
+    rotation       = 2,
+    nCharEdges     = 0,
+    nCharNodes     = 0,          
+    residuals      = TRUE,       
+    intercepts     = FALSE,       
+    
+    groups         = "latents", 
+    pastel         = TRUE, 
+    borders        = TRUE,
+    border.color   = "white",
+    color          = list( lat = c("#EFA39F", "#A0D8EA", "#F7CB65", "#C1E1C4") ),
+    
+    DoNotPlot      = TRUE,
+    mar            = c(8, 8, 8, 8)
+    
+    # filename       = "myplot",   #<<
+    # filetype       = "pdf",      #<<
+    # width          = 5,          #<<
+    # height         = 3.5         #<<
+  ) 
+########################################################################
+
+
+
+
+
+########################################################################
 indicator_order <- c(
   paste0("LM",   4:1),
   paste0("ASE",  5:1),
@@ -91,38 +127,15 @@ loading_position <- c(ASE = .5,
                       LE  = .5)
 
 
+my_label_list <- list(
+  list(node = "LM",  to = "Learning\n motivation"),
+  list(node = "ASE",  to = "Academic\n self-efficacy"),
+  list(node = "PCR", to = "Parent-child\n relationship"),
+  list(node = "LE", to = "Learning\n engagement")
+)
 
-p <- fit %>% 
-  semPaths(
-    what           = "path", 
-    whatLabels     = "std",       
-    style          = "ram",    # lisrel / ram 
-    edge.label.cex = 0.8,        
-    edge.color     = "blue",     
-    exoVar         = FALSE,
-    residScale     = 8,   
-    rotation       = 2,
-    nCharEdges     = 0,
-    nCharNodes     = 0,          
-    residuals      = TRUE,       
-    intercepts     = FALSE,       
-    
-    groups         = "latents", 
-    pastel         = TRUE, 
-    borders        = TRUE,
-    border.color   = "white",
-    color = list(
-       lat = c("#EFA39F", "#A0D8EA", "#F7CB65", "#C1E1C4")
-    ),
-    
-    DoNotPlot      = TRUE,
-    mar            = c(8, 8, 8, 8)
-    
-    # filename       = "myplot",   #<<
-    # filetype       = "pdf",      #<<
-    # width          = 5,          #<<
-    # height         = 3.5         #<<
-  ) 
+
+
 
 
 p %>% 
@@ -140,6 +153,7 @@ p %>%
   set_curve( c("LE ~ LM" = 0) ) %>% 
   rotate_resid( c(LM = 0, ASE = 0, LE = -180) ) %>% 
   set_edge_label_position( c("ASE ~ PCR" = 0.45) ) %>% 
+  change_node_label(my_label_list, label.scale = F) %>% 
   plot()
 ########################################################################
 
