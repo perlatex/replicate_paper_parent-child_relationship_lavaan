@@ -41,22 +41,26 @@ rawdata %>%
 
 ```{r}
 rawdata %>% 
-  count(gender)
+  count(gender) %>% 
+  mutate(p = n/sum(n)) %>% 
+  mutate(prop = scales::percent(p))
 ```
+
 
 ```{r}
 rawdata %>% 
-  count(Grade)
+  count(Grade) %>% 
+  mutate(p = n/sum(n)) %>% 
+  mutate(prop = scales::percent(p))
 ```
+
 
 ```{r}
 rawdata %>% 
-  count(place)
+  count(place) %>% 
+  mutate(p = n/sum(n)) %>% 
+  mutate(prop = scales::percent(p))
 ```
-
-
-
-
 
 偷懒的办法
 
@@ -76,23 +80,19 @@ Confirmatory factor analysis (CFA) was performed for each variable
 ```{r}
 m_PCR <- '
   PCR   =~ PCR1 + PCR2 + PCR3 + PCR4 + PCR5 + PCR6
-
 '
 
 m_LE <- '
   LE    =~ LE1 + LE2 + LE3 + LE4
-
 '
 
 
 m_ASE <- '
   ASE   =~ ASE1 + ASE2 + ASE3 + ASE4 + ASE5 
-
 '
 
 m_LM <- '
   LM    =~ LM1 + LM2 + LM3 + LM4
-
 '
 
 lst(m_PCR, m_LE, m_ASE, m_LM) %>% 
@@ -109,7 +109,6 @@ cfamodel <- '
   ASE   =~ ASE1 + ASE2 + ASE3 + ASE4 + ASE5 
   LM    =~ LM1 + LM2 + LM3 + LM4
 
-  
 '
 
 fit_cfa <- cfa(cfamodel, 
@@ -154,7 +153,7 @@ tb2 <- fit_cfa %>%
 
 
 
-```{r}
+```{r, eval=FALSE}
 tab2 %>% 
   flextable::save_as_docx(path = "ppp.docx")
 ```
@@ -185,6 +184,7 @@ m %>%
 ```
 
 
+or
 ```{r}
 AVE <- fit_cfa %>% semTools::AVE()  
 
